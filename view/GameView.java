@@ -32,7 +32,6 @@ public class GameView extends JFrame{
     private JPanel gameOverPanel;
     private JLabel gameOverLabel;
     private JButton backButton;
-    private JButton retryButton;
     private JLayeredPane layeredPane;
 
         public GameView(GameModel model) {
@@ -234,20 +233,13 @@ public class GameView extends JFrame{
             gameOverLabel.setForeground(Color.WHITE);
             gameOverLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            retryButton = new JButton("Retry");
             backButton = new JButton("Back to Menu"); 
-
-            retryButton.setAlignmentX(Component.CENTER_ALIGNMENT);
             backButton.setAlignmentX(Component.CENTER_ALIGNMENT); 
-
-            retryButton.setVisible(false);
             backButton.setVisible(false); 
 
             gameOverPanel.add(Box.createVerticalGlue());
             gameOverPanel.add(gameOverLabel);
             gameOverPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-            gameOverPanel.add(retryButton);
-            gameOverPanel.add(Box.createRigidArea(new Dimension(10, 10)));
             gameOverPanel.add(backButton); 
             gameOverPanel.add(Box.createVerticalGlue());
 
@@ -571,48 +563,54 @@ public class GameView extends JFrame{
         gameOverLabel.setForeground(victory ? Color.GREEN : Color.RED);
         gameOverPanel.setVisible(true);
 
-        retryButton.setVisible(true);
-        backButton.setVisible(true); // Always show back button
+        backButton.setVisible(true);
     }
 
     // Called to hide game over screen
     public void hideGameOver() {
         gameOverPanel.setVisible(false);
-        retryButton.setVisible(false);
         backButton.setVisible(false);
     }
 
-    // Adds listener to "Retry" button
-    public void addRetryListener(ActionListener listener) {
-        retryButton.addActionListener(listener);
-    }
 
     // Adds listener to new "Back" button
     public void addBackListener(ActionListener listener) {
         backButton.addActionListener(listener);
     }
 
-
+    // Cleans and resets board state
     public void resetBoard() {
-        if (plantLabels == null) {
-            System.err.println("plantLabels array is null");
+        if (tilePanels == null || plantLabels == null) {
+            System.err.println("Board not initialized properly.");
             return;
         }
 
-        for (int r = 0; r < plantLabels.length; r++) {
-            if (plantLabels[r] == null) {
-                continue;
-            }
+        for (int r = 0; r < tilePanels.length; r++) {
+            for (int c = 0; c < tilePanels[r].length; c++) {
+                JLayeredPane tile = tilePanels[r][c];
+                if (tile == null) continue;
 
-            for (int c = 0; c < plantLabels[r].length; c++) {
-                if (plantLabels[r][c] != null) {
-                    plantLabels[r][c].setIcon(null);
-                } else {
-                    System.err.println("plantLabels[" + r + "][" + c + "] is null.");
+                // Remove all components EXCEPT background (layer 0)
+                for (int i = tile.getComponentCount() - 1; i >= 0; i--) {
+                    Component comp = tile.getComponent(i);
+                    Integer layer = (Integer) tile.getLayer(comp);
+                    if (layer != 0) {
+                        tile.remove(comp);
+                    }
                 }
+
+                // Create and re-add an empty plant label to layer 1
+                JLabel plantLabel = new JLabel();
+                plantLabel.setBounds(0, 0, 100, 100);
+                tile.add(plantLabel, Integer.valueOf(1));
+                plantLabels[r][c] = plantLabel;
+
+                tile.revalidate();
+                tile.repaint();
             }
         }
     }
+
 
 
     // For cherrybomb visuals
@@ -626,11 +624,12 @@ public class GameView extends JFrame{
         layeredPane.repaint();
     }
 
-
-
-
-
 }
+
+
+
+    
+
 
 
 
