@@ -61,14 +61,6 @@ public class GameController {
             });
         });
 
-
-
-
-        view.addRetryListener(e -> {
-            int currentLevel = model.getCurrentLevel();
-            startLevel(currentLevel); // Restart current level
-        });
-
         // Start cooldown updater
         new Timer(1000, e -> {
             for (Map.Entry<String, Integer> entry : plantCooldowns.entrySet()) {
@@ -98,7 +90,6 @@ public class GameController {
         view.updateTime(0);
         view.updateProgress(0);
 
-        // (Optional) Reset all cooldowns
         for (String key : plantCooldowns.keySet()) {
             plantCooldowns.put(key, 0);
         }
